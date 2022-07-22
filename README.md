@@ -1,2 +1,5 @@
 # Truffle
-A jailbreak tweak that implements the Truffle api to for cool and custom emojis in YouTube streams. not all Truffle features will be here.
+A jailbreak tweak that implements the Truffle api for custom emojis in YouTube Streams. not all Truffle features will be here.
+
+# Installation (DISABLED)
+I don't have a repo for this. 
