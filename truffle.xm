@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+
 %hook YouTubeLiveChatViewController
 
 - (void)renderLiveChatMessage:(YTILiveChatMessage *)liveChatMessage
