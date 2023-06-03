@@ -1,30 +1,36 @@
-%group JustSettings
-NSInteger pageStyle = 0;
-%hook YTRightNavigationButtons
-%property (strong, nonatomic) YTQTMButton *truffleButton;
--(NSMutableArray *)buttons {
-    NSMutableArray *retVal = %orig.mutableCopy;
-    [self.truffleButton removeFromSuperview];
-    [self addSubview:self.truffleButton];
-    if(!self.truffleButton || pageStyle != [%c(YTPageStyleController) pageStyle]) {
-        self.truffleButton = [%c(YTQTMButton) iconButton];
-        self.truffleButton.frame = CGRectMake(0, 0, 40, 40);
-        
-        if([%c(YTPageStyleController) pageStyle]) { //dark mode
-            [self.truffleButton setImage:[UIImage imageWithContentsOfFile:@"/var/mobile/Library/Application Support/Truffle/trufflesettings-20@2x.png"] forState:UIControlStateNormal];
-        }
-        else { //light mode
-            UIImage *image = [UIImage imageWithContentsOfFile:@"/var/mobile/Library/Application Support/iSponsorBlock/trufflesettings-20@2x.png"];
-            image = [image imageWithTintColor:UIColor.blackColor renderingMode:UIImageRenderingModeAlwaysTemplate];
-            [self.truffleButton setImage:image forState:UIControlStateNormal];
-            [self.truffleButton setTintColor:UIColor.blackColor];
-        }
-        pageStyle = [%c(YTPageStyleController) pageStyle];
-        
-        [self.truffleButton addTarget:self action:@selector(truffleButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-        [retVal insertObject:self.truffleButton atIndex:0];
-    }
-    return retVal;
+%hook YouTubeLiveChatViewController
+
+- (void)renderLiveChatMessage:(YTILiveChatMessage *)liveChatMessage
+{
+    %orig;
+
+    // Add custom emoji support
+    NSString *messageText = [liveChatMessage.snippet.displayMessage.text mutableCopy];
+    messageText = [messageText stringByReplacingOccurrencesOfString:@":smile:" withString:@"😀"];
+    messageText = [messageText stringByReplacingOccurrencesOfString:@":heart:" withString:@"❤️"];
+    messageText = [messageText stringByReplacingOccurrencesOfString:@":thumbsup:" withString:@"👍"];
+    messageText = [messageText stringByReplacingOccurrencesOfString:@":thumbsdown:" withString:@"👎"];
+
+    liveChatMessage.snippet.displayMessage.text = messageText;
 }
--(NSMutableArray *)visibleButtons {
-    NSMutableArray *retVal = %orig.mutableCopy;
+
+%end
+
+%hook YouTubeLiveChatViewController
+
+- (void)reloadData {
+    %orig;
+    // remove profile pictures from the chat
+    for (UIView *view in self.view.subviews) {
+        if ([view isKindOfClass:NSClassFromString(@"YTILiveChatCellView")]) {
+            UIView *subView = [view.subviews objectAtIndex:0];
+            for (UIView *subSubView in subView.subviews) {
+                if ([subSubView isKindOfClass:NSClassFromString(@"YTIProfilePictureView")]) {
+                    subSubView.hidden = YES;
+                }
+            }
+        }
+    }
+}
+
+%end
